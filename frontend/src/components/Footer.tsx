@@ -10,7 +10,7 @@ export default function Footer() {
     staleTime: 5 * 60_000,
   });
 
-  const name = s?.company_name || 'Azim Realty';
+  const name = s?.company_name || 'NUR Realty';
   const tagline = s?.tagline || 'Helping families find the right home.';
 
   return (

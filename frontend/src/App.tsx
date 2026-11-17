@@ -49,7 +49,7 @@ export default function App() {
         <Route path="/sold" element={<Listings mode="sold" />} />
         <Route path="/property/:slug" element={<PropertyDetails />} />
         <Route path="/favorites" element={<Favorites />} />
-        <Route path="/about" element={<Placeholder title="About Azim Realty" />} />
+        <Route path="/about" element={<Placeholder title="About NUR Realty" />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<Placeholder title="Page not found" />} />
       </Route>

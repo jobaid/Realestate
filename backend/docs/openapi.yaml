@@ -1,15 +1,15 @@
 openapi: 3.0.3
 info:
-  title: Azim Realty API
+  title: NUR Realty API
   version: "0.6.0"
   description: |
-    Backend API powering the Azim Realty platform.
+    Backend API powering the NUR Realty platform.
 
     * Public endpoints are unauthenticated and rate-limited per IP.
     * Admin endpoints require `Authorization: Bearer <access_token>`
       and are additionally role-gated.
   contact:
-    name: Azim Realty
+    name: NUR Realty
 servers:
   - url: /api/v1
 tags:

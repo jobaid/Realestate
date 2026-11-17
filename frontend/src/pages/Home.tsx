@@ -16,7 +16,7 @@ export default function Home() {
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'RealEstateAgent',
-      name: 'Azim Realty',
+      name: 'NUR Realty',
       url: window.location.origin,
       areaServed: 'Massachusetts',
     },

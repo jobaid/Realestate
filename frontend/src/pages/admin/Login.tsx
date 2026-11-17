@@ -33,7 +33,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-8">
         <div className="flex items-center gap-2 mb-6 justify-center">
           <Home className="text-accent-600" size={24} />
-          <span className="font-display font-bold text-xl">Azim Realty Admin</span>
+          <span className="font-display font-bold text-xl">Nur Kalam Admin</span>
         </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>

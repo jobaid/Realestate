@@ -10,7 +10,7 @@ export interface HeadOptions {
   robots?: string;
 }
 
-const DEFAULT_TITLE = 'Azim Realty — Find Your Perfect Place to Call Home';
+const DEFAULT_TITLE = 'NUR Realty — Find Your Perfect Place to Call Home';
 
 function upsertMeta(sel: string, attrs: Record<string, string>) {
   let el = document.head.querySelector<HTMLMetaElement>(sel);
@@ -50,7 +50,7 @@ function setJsonLd(data: object | object[] | null | undefined) {
 export function useHead(opts: HeadOptions) {
   useEffect(() => {
     const previousTitle = document.title;
-    const title = opts.title ? `${opts.title} · Azim Realty` : DEFAULT_TITLE;
+    const title = opts.title ? `${opts.title} · NUR Realty` : DEFAULT_TITLE;
     document.title = title;
 
     if (opts.description) {

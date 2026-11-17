@@ -36,7 +36,7 @@ export default function AdminLayout() {
       <aside className="w-60 shrink-0 bg-navy-900 text-white flex flex-col">
         <div className="h-16 flex items-center gap-2 px-4 border-b border-navy-800">
           <Home className="text-accent-500" size={20} />
-          <span className="font-display font-bold">Azim Admin</span>
+          <span className="font-display font-bold">Nur Kalam Admin</span>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {canManagerView && (

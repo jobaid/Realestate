@@ -8,7 +8,7 @@ export default function Contact() {
   const { data: s } = useQuery({ queryKey: ['public-settings'], queryFn: getPublicSettings });
   useHead({
     title: 'Contact us',
-    description: 'Questions about a listing, a showing, or selling your home? Get in touch with Azim Realty.',
+    description: 'Questions about a listing, a showing, or selling your home? Get in touch with NUR Realty.',
   });
 
   return (

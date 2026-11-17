@@ -15,7 +15,7 @@ export default function Header() {
       <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <Home className="text-accent-600" size={22} />
-          <span className="font-display font-bold text-xl tracking-tight">Azim Realty</span>
+          <span className="font-display font-bold text-xl tracking-tight">NUR Realty</span>
         </Link>
         <nav className="hidden md:flex items-center">
           <NavLink to="/" end className={navLink}>Home</NavLink>

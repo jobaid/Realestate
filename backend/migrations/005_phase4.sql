@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
 );
 
 INSERT INTO site_settings (id, data) VALUES (1, jsonb_build_object(
-    'company_name', 'Azim Realty',
+    'company_name', 'NUR Realty',
     'tagline', 'Find the home that fits your life.',
     'phone', '(617) 555-0123',
     'email', 'hello@azimrealty.local',

@@ -14,7 +14,7 @@ const swaggerUIHTML = `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Azim Realty API — Docs</title>
+  <title>NUR Realty API — Docs</title>
   <meta name="robots" content="noindex,nofollow" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css" />
   <style>body{margin:0}</style>
