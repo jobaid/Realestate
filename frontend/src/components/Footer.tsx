@@ -42,8 +42,15 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-4 py-5 text-xs text-navy-100/60 flex justify-between">
-          <span>© {new Date().getFullYear()} {name}. All rights reserved.</span>
+        <div className="mx-auto max-w-7xl px-4 py-5 text-xs text-navy-100/60 flex flex-col sm:flex-row sm:justify-between gap-2">
+          <span>
+            © {new Date().getFullYear()} {name}. Developed by{' '}
+            <a href="https://www.linkedin.com/in/jobaidazim/" target="_blank" rel="noopener noreferrer"
+               className="text-navy-100/60 hover:text-white transition">
+              Jobaid Azim
+            </a>
+            . All rights reserved.
+          </span>
           <span>Built for the modern homeowner.</span>
         </div>
       </div>
