@@ -47,7 +47,7 @@ function PropertyBody({ p }: { p: Property }) {
   });
 
   return (
-    <article className="mx-auto max-w-7xl px-4 py-8">
+    <article className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
       <nav className="text-sm text-navy-500 mb-4">
         <Link to="/" className="hover:text-navy-900">Home</Link> ·{' '}
         <Link to={p.listing_type === 'rent' ? '/rent' : '/buy'} className="hover:text-navy-900">
@@ -55,38 +55,43 @@ function PropertyBody({ p }: { p: Property }) {
         </Link>
       </nav>
 
-      <div className="grid gap-3 md:grid-cols-4">
-        <div className="md:col-span-3 md:row-span-2 aspect-[16/10] bg-navy-100 rounded-2xl overflow-hidden flex items-center justify-center text-navy-300">
+      <div className="grid gap-2 sm:gap-3 md:grid-cols-4">
+        <div className="md:col-span-3 md:row-span-2 aspect-[16/10] bg-navy-100 rounded-xl sm:rounded-2xl overflow-hidden flex items-center justify-center text-navy-300">
           {main ? (
             <img src={main.url} alt={p.title} className="w-full h-full object-cover" />
           ) : (
             <Home size={48} />
           )}
         </div>
-        {images.slice(0, 4).map((img, i) => (
-          <button key={img.id} onClick={() => setIdx(i)}
-            className={`aspect-[4/3] rounded-xl overflow-hidden ring-2 ${i === idx ? 'ring-accent-500' : 'ring-transparent'}`}>
-            <img src={img.url} className="w-full h-full object-cover" alt="" />
-          </button>
-        ))}
+        {images.length > 1 && (
+          <div className="grid grid-cols-4 md:grid-cols-1 md:col-span-1 md:row-span-2 gap-2 sm:gap-3">
+            {images.slice(0, 4).map((img, i) => (
+              <button key={img.id} onClick={() => setIdx(i)}
+                className={`aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden ring-2 ${i === idx ? 'ring-accent-500' : 'ring-transparent'}`}>
+                <img src={img.url} className="w-full h-full object-cover" alt="" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px]">
+      <div className="mt-6 sm:mt-8 grid gap-8 lg:gap-10 lg:grid-cols-[1fr_360px]">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-accent-50 text-accent-700">
               {p.listing_type === 'rent' ? 'For Rent' : p.status === 'sold' ? 'Sold' : 'For Sale'}
             </span>
             {p.featured && <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-navy-900 text-white">Featured</span>}
             <span className="ml-auto"><FavoriteButton propertyId={p.id} /></span>
           </div>
-          <h1 className="mt-3 text-3xl md:text-4xl font-extrabold">{p.title}</h1>
-          <div className="mt-2 text-navy-500 inline-flex items-center gap-1.5">
-            <MapPin size={16} /> {p.address}{p.unit_number ? `, ${p.unit_number}` : ''}, {p.city}, {p.state} {p.zip_code}
+          <h1 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-extrabold">{p.title}</h1>
+          <div className="mt-2 text-sm sm:text-base text-navy-500 flex items-start gap-1.5">
+            <MapPin size={16} className="mt-0.5 shrink-0" />
+            <span>{p.address}{p.unit_number ? `, ${p.unit_number}` : ''}, {p.city}, {p.state} {p.zip_code}</span>
           </div>
-          <div className="mt-6 text-4xl font-extrabold text-navy-900">{priceFor(p)}</div>
+          <div className="mt-5 sm:mt-6 text-3xl sm:text-4xl font-extrabold text-navy-900">{priceFor(p)}</div>
 
-          <dl className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <dl className="mt-6 sm:mt-8 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <Stat Icon={Bed} label="Bedrooms" value={p.bedrooms} />
             <Stat Icon={Bath} label="Bathrooms" value={p.bathrooms} />
             <Stat Icon={Ruler} label="Area" value={sqft(p.square_feet)} />

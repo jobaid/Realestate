@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, SlidersHorizontal, X } from 'lucide-react';
 import PropertyCard from '../components/PropertyCard';
 import SoldCard from '../components/SoldCard';
 import { listProperties, listSold } from '../api';
@@ -10,6 +11,7 @@ interface Props { mode: 'buy' | 'rent' | 'sold' }
 
 export default function Listings({ mode }: Props) {
   const [params, setParams] = useSearchParams();
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filters = {
     listing_type: mode === 'rent' ? 'rent' : (mode === 'buy' ? 'sale' : undefined),
@@ -94,14 +96,44 @@ export default function Listings({ mode }: Props) {
 
   // ====== BUY / RENT: sidebar + grid ======
   const inp = 'w-full rounded-md border border-navy-100 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500';
+  const activeFilterCount = Object.values(filters).filter((v) => v && v !== filters.listing_type).length;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <h1 className="text-3xl md:text-4xl font-extrabold mb-2">{title}</h1>
-      <p className="text-navy-500 mb-8">{total} {total === 1 ? 'property' : 'properties'}</p>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10">
+      <div className="flex items-start sm:items-end justify-between gap-3 mb-6 sm:mb-8 flex-wrap">
+        <div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-1">{title}</h1>
+          <p className="text-sm sm:text-base text-navy-500">{total} {total === 1 ? 'property' : 'properties'}</p>
+        </div>
+        <button type="button" onClick={() => setFiltersOpen(true)}
+          className="lg:hidden inline-flex items-center gap-2 rounded-lg bg-navy-900 text-white px-4 py-2 text-sm font-semibold">
+          <SlidersHorizontal size={16} /> Filters
+          {activeFilterCount > 0 && (
+            <span className="rounded-full bg-accent-500 text-white text-xs font-bold px-1.5 py-0.5">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      </div>
 
-      <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-        <aside className="h-fit rounded-2xl bg-white ring-1 ring-navy-100 p-5 space-y-4">
+      <div className="grid gap-6 lg:gap-8 lg:grid-cols-[260px_1fr]">
+        {/* Mobile overlay + drawer */}
+        {filtersOpen && (
+          <div onClick={() => setFiltersOpen(false)}
+            className="lg:hidden fixed inset-0 bg-navy-900/50 z-40" aria-hidden="true" />
+        )}
+        <aside className={`${
+          filtersOpen
+            ? 'fixed inset-y-0 right-0 z-50 w-80 max-w-[90vw] overflow-y-auto shadow-xl'
+            : 'hidden lg:block'
+        } lg:static lg:shadow-none lg:w-auto h-fit rounded-none lg:rounded-2xl bg-white ring-0 lg:ring-1 lg:ring-navy-100 p-5 space-y-4`}>
+          <div className="flex items-center justify-between lg:hidden -mt-1 mb-2">
+            <span className="font-display font-bold text-lg">Filters</span>
+            <button onClick={() => setFiltersOpen(false)} aria-label="Close filters"
+              className="rounded-lg p-1.5 hover:bg-navy-50 text-navy-700">
+              <X size={20} />
+            </button>
+          </div>
           <Field label="City">
             <input className={inp} defaultValue={filters.city ?? ''} onBlur={e => setFilter('city', e.target.value)} />
           </Field>
@@ -145,7 +177,7 @@ export default function Listings({ mode }: Props) {
         <div>
           {q.isLoading ? <div className="text-navy-500">Loading…</div>
             : items.length === 0 ? <EmptyState mode={mode} />
-            : <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            : <div className="grid gap-5 sm:gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {items.map(p => <PropertyCard key={p.id} p={p} />)}
               </div>}
 
