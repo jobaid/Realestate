@@ -78,8 +78,14 @@ function PropertyBody({ p }: { p: Property }) {
       <div className="mt-6 sm:mt-8 grid gap-8 lg:gap-10 lg:grid-cols-[1fr_360px]">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-accent-50 text-accent-700">
-              {p.listing_type === 'rent' ? 'For Rent' : p.status === 'sold' ? 'Sold' : 'For Sale'}
+            <span className={`text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+              p.status === 'sold' || p.status === 'rented'
+                ? 'bg-red-600 text-white'
+                : 'bg-accent-50 text-accent-700'
+            }`}>
+              {p.listing_type === 'rent'
+                ? p.status === 'rented' ? 'Rented' : 'For Rent'
+                : p.status === 'sold' ? 'Sold' : 'For Sale'}
             </span>
             {p.featured && <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-navy-900 text-white">Featured</span>}
             <span className="ml-auto"><FavoriteButton propertyId={p.id} /></span>

@@ -7,8 +7,8 @@ import FavoriteButton from './FavoriteButton';
 const statusColor: Record<string, string> = {
   available: 'bg-accent-500',
   pending:   'bg-amber-500',
-  sold:      'bg-navy-800',
-  rented:    'bg-navy-800',
+  sold:      'bg-red-600',
+  rented:    'bg-red-600',
 };
 
 export default function PropertyCard({ p }: { p: Property }) {

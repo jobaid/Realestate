@@ -21,7 +21,7 @@ export default function SoldCard({ p }: { p: Property }) {
           <div className="w-full h-full flex items-center justify-center text-navy-300">No photo</div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-        <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-navy-900 text-white text-xs font-bold px-2.5 py-1 rounded-full tracking-wide">
+        <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full tracking-wide shadow-md">
           <CheckCircle2 size={14} /> SOLD
         </div>
         {p.sold_date && (

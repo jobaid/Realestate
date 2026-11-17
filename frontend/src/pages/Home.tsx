@@ -1,14 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, BadgeCheck, Compass, Users } from 'lucide-react';
+import { ShieldCheck, BadgeCheck, Compass, Users, ArrowRight } from 'lucide-react';
 import SearchBar from '../components/SearchBar';
 import PropertyCard from '../components/PropertyCard';
-import { listFeatured, listRecent } from '../api';
+import SoldCard from '../components/SoldCard';
+import { listFeatured, listRecent, listSold } from '../api';
 import { useHead } from '../lib/head';
 
 export default function Home() {
   const featured = useQuery({ queryKey: ['featured'], queryFn: listFeatured });
   const recent = useQuery({ queryKey: ['recent'], queryFn: listRecent });
+  const sold = useQuery({ queryKey: ['sold'], queryFn: listSold });
 
   useHead({
     title: 'Find Your Perfect Place to Call Home',
@@ -63,6 +65,24 @@ export default function Home() {
         <Grid items={recent.data} loading={recent.isLoading} empty="No listings yet." />
       </Section>
 
+      <section className="mx-auto max-w-7xl px-4 mt-12 sm:mt-20">
+        <div className="flex items-end justify-between mb-5 sm:mb-6 flex-wrap gap-3">
+          <div>
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-red-50 text-red-700 px-2.5 py-1 text-xs font-bold uppercase tracking-wider mb-2">
+              Sold
+            </div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold">Recently Sold</h2>
+            <p className="mt-1 text-sm sm:text-base text-navy-500">
+              Closed deals from our portfolio — see what's moving.
+            </p>
+          </div>
+          <Link to="/sold" className="inline-flex items-center gap-1 text-sm font-semibold text-accent-700 hover:text-accent-800">
+            View all sold <ArrowRight size={14} />
+          </Link>
+        </div>
+        <SoldGrid items={sold.data} loading={sold.isLoading} />
+      </section>
+
       <Section title="Why Choose NUR Realty">
         <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-4">
           {[
@@ -115,6 +135,31 @@ function Grid({ items, loading, empty }: { items?: any[]; loading: boolean; empt
   return (
     <div className="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map(p => <PropertyCard key={p.id} p={p} />)}
+    </div>
+  );
+}
+
+function SoldGrid({ items, loading }: { items?: any[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <div className="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="aspect-[4/3] rounded-2xl bg-navy-100 animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+  if (!items || items.length === 0) {
+    return (
+      <div className="rounded-2xl bg-white ring-1 ring-navy-100 p-10 text-center">
+        <p className="text-navy-600 font-medium">No sold properties recorded yet.</p>
+        <p className="text-sm text-navy-500 mt-1">Closed deals will appear here.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {items.slice(0, 3).map((p) => <SoldCard key={p.id} p={p} />)}
     </div>
   );
 }
