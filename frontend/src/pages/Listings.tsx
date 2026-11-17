@@ -102,8 +102,18 @@ export default function Listings({ mode }: Props) {
 
         <div>
           {q.isLoading ? <div className="text-navy-500">Loading…</div>
-            : !q.data?.data?.length ? <div className="text-navy-500">No properties match these filters.</div>
-            : <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            : !q.data?.data?.length ? (
+              <div className="rounded-2xl bg-white ring-1 ring-navy-100 p-10 text-center">
+                <p className="text-navy-600 font-medium">
+                  {mode === 'sold' ? 'No sold properties recorded yet.' : 'No properties match these filters.'}
+                </p>
+                <p className="text-sm text-navy-500 mt-1">
+                  {mode === 'sold'
+                    ? 'Recently closed deals will appear here once published.'
+                    : 'Try removing a filter or widening the price range.'}
+                </p>
+              </div>
+            ) : <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {q.data.data.map(p => <PropertyCard key={p.id} p={p} />)}
               </div>}
 

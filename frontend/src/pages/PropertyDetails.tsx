@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Bed, Bath, Ruler, Calendar, MapPin, Home } from 'lucide-react';
 import { getProperty } from '../api';
+import type { Property } from '../types';
 import { priceFor, sqft, money } from '../lib/format';
 import InquiryForm from '../components/InquiryForm';
 import FavoriteButton from '../components/FavoriteButton';
@@ -11,22 +12,35 @@ import PropertyDetailsSkeleton from '../components/PropertyDetailsSkeleton';
 import { useHead } from '../lib/head';
 import { buildPropertyJsonLd } from '../lib/jsonld';
 
+// The container only decides which of the three UIs to render. All hooks
+// that depend on the loaded property live inside PropertyBody so their count
+// stays stable regardless of loading state.
 export default function PropertyDetails() {
   const { slug = '' } = useParams();
-  const q = useQuery({ queryKey: ['property', slug], queryFn: () => getProperty(slug), enabled: !!slug });
-  const [idx, setIdx] = useState(0);
+  const q = useQuery({
+    queryKey: ['property', slug],
+    queryFn: () => getProperty(slug),
+    enabled: !!slug,
+    retry: false,
+  });
 
   if (q.isLoading) return <PropertyDetailsSkeleton />;
   if (q.isError || !q.data) return <NotFoundProperty slug={slug} />;
-  const p = q.data;
-  const main = p.images[idx] ?? p.images[0];
-  const pic = p.images.find((i) => i.is_primary)?.url ?? p.images[0]?.url;
+  return <PropertyBody p={q.data} />;
+}
+
+function PropertyBody({ p }: { p: Property }) {
+  const [idx, setIdx] = useState(0);
+  const images = Array.isArray(p.images) ? p.images : [];
+  const main = images[idx] ?? images[0];
+  const pic = images.find((i) => i.is_primary)?.url ?? images[0]?.url;
 
   useHead({
     title: p.title,
-    description:
-      (p.description || `${p.property_type} in ${p.city}, ${p.state} — ${p.bedrooms} bd / ${p.bathrooms} ba.`)
-        .slice(0, 300),
+    description: (
+      p.description ||
+      `${p.property_type} in ${p.city}, ${p.state} — ${p.bedrooms} bd / ${p.bathrooms} ba.`
+    ).slice(0, 300),
     image: pic,
     type: 'article',
     jsonLd: buildPropertyJsonLd(p, window.location.href),
@@ -42,10 +56,14 @@ export default function PropertyDetails() {
       </nav>
 
       <div className="grid gap-3 md:grid-cols-4">
-        <div className="md:col-span-3 md:row-span-2 aspect-[16/10] bg-navy-100 rounded-2xl overflow-hidden">
-          {main && <img src={main.url} alt={p.title} className="w-full h-full object-cover" />}
+        <div className="md:col-span-3 md:row-span-2 aspect-[16/10] bg-navy-100 rounded-2xl overflow-hidden flex items-center justify-center text-navy-300">
+          {main ? (
+            <img src={main.url} alt={p.title} className="w-full h-full object-cover" />
+          ) : (
+            <Home size={48} />
+          )}
         </div>
-        {p.images.slice(0, 4).map((img, i) => (
+        {images.slice(0, 4).map((img, i) => (
           <button key={img.id} onClick={() => setIdx(i)}
             className={`aspect-[4/3] rounded-xl overflow-hidden ring-2 ${i === idx ? 'ring-accent-500' : 'ring-transparent'}`}>
             <img src={img.url} className="w-full h-full object-cover" alt="" />
@@ -75,14 +93,16 @@ export default function PropertyDetails() {
             <Stat Icon={Calendar} label="Year built" value={p.year_built ?? '—'} />
             <Stat Icon={Home} label="Type" value={p.property_type} />
             <Stat Icon={Home} label="Garage" value={`${p.garage_spaces} spaces`} />
-            {p.lot_size && <Stat Icon={Ruler} label="Lot" value={`${p.lot_size} sqft`} />}
-            {p.sold_date && <Stat Icon={Calendar} label="Sold" value={new Date(p.sold_date).toLocaleDateString()} />}
+            {p.lot_size ? <Stat Icon={Ruler} label="Lot" value={`${p.lot_size} sqft`} /> : null}
+            {p.sold_date ? <Stat Icon={Calendar} label="Sold" value={new Date(p.sold_date).toLocaleDateString()} /> : null}
           </dl>
 
-          <section className="mt-10">
-            <h2 className="text-xl font-bold mb-3">About this property</h2>
-            <p className="text-navy-700 leading-relaxed whitespace-pre-line">{p.description}</p>
-          </section>
+          {p.description && (
+            <section className="mt-10">
+              <h2 className="text-xl font-bold mb-3">About this property</h2>
+              <p className="text-navy-700 leading-relaxed whitespace-pre-line">{p.description}</p>
+            </section>
+          )}
 
           {p.sold_date && p.sold_price && (
             <section className="mt-8 rounded-2xl bg-navy-50 p-5 ring-1 ring-navy-100">
@@ -97,9 +117,6 @@ export default function PropertyDetails() {
           <p className="text-sm text-navy-500 mb-4">Send a message about this property and we'll respond shortly.</p>
           <InquiryForm propertyId={p.id} compact
             defaultMessage={`Hi, I'm interested in "${p.title}" and would like to schedule a showing.`} />
-          <a href="tel:+16175550123" className="mt-3 block text-center rounded-lg bg-navy-900 hover:bg-navy-800 text-white font-semibold py-2.5 text-sm">
-            Or call (617) 555-0123
-          </a>
         </aside>
       </div>
     </article>

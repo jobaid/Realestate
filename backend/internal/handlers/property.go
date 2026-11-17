@@ -209,7 +209,9 @@ func (h *PropertyHandler) Recent(c *gin.Context) {
 
 // GET /api/v1/properties/sold
 func (h *PropertyHandler) Sold(c *gin.Context) {
-	h.listSimple(c, "status = 'sold'", "sold_date DESC NULLS LAST", 24)
+	// Order by sold_date when present, else fall back to updated_at so properties
+	// marked sold without an explicit date still show up in a sensible position.
+	h.listSimple(c, "status = 'sold'", "COALESCE(sold_date::timestamptz, updated_at) DESC", 24)
 }
 
 func (h *PropertyHandler) listSimple(c *gin.Context, cond, orderBy string, limit int) {
