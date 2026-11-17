@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: Azim Realty API
+  version: "0.6.0"
+  description: |
+    Backend API powering the Azim Realty platform.
+
+    * Public endpoints are unauthenticated and rate-limited per IP.
+    * Admin endpoints require `Authorization: Bearer <access_token>`
+      and are additionally role-gated.
+  contact:
+    name: Azim Realty
+servers:
+  - url: /api/v1
+tags:
+  - name: Public
+  - name: Auth
+  - name: Admin — properties
+  - name: Admin — inquiries
+  - name: Admin — users
+  - name: Admin — stats
+  - name: Admin — settings
+  - name: Admin — audit
+
+security:
+  - BearerAuth: []
+
+paths:
+  /properties:
+    get:
+      tags: [Public]
+      summary: List published properties
+      parameters:
+        - { in: query, name: listing_type,  schema: { type: string, enum: [sale, rent] } }
+        - { in: query, name: property_type, schema: { type: string } }
+        - { in: query, name: city,          schema: { type: string } }
+        - { in: query, name: zip_code,      schema: { type: string } }
+        - { in: query, name: min_price,     schema: { type: integer } }
+        - { in: query, name: max_price,     schema: { type: integer } }
+        - { in: query, name: bedrooms,      schema: { type: integer } }
+        - { in: query, name: bathrooms,     schema: { type: number } }
+        - { in: query, name: sort,          schema: { type: string, enum: [newest, price_asc, price_desc] } }
+        - { in: query, name: page,          schema: { type: integer, minimum: 1 } }
+        - { in: query, name: page_size,     schema: { type: integer, minimum: 1, maximum: 50 } }
+      security: []
+      responses: { "200": { description: ok } }
+
+  /properties/featured:   { get: { tags: [Public], summary: Featured, security: [], responses: { "200": { description: ok } } } }
+  /properties/recent:     { get: { tags: [Public], summary: Newest 8, security: [], responses: { "200": { description: ok } } } }
+  /properties/sold:       { get: { tags: [Public], summary: Recently sold, security: [], responses: { "200": { description: ok } } } }
+  /properties/{slug}:
+    get:
+      tags: [Public]
+      summary: Get property by slug
+      security: []
+      parameters: [ { in: path, name: slug, required: true, schema: { type: string } } ]
+      responses: { "200": { description: ok }, "404": { description: not found } }
+
+  /settings:
+    get:
+      tags: [Public]
+      summary: Public company settings
+      security: []
+      responses: { "200": { description: ok } }
+
+  /inquiries:
+    post:
+      tags: [Public]
+      summary: Submit a public inquiry (5 req / 10 min / IP)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InquiryInput" }
+      responses:
+        "201": { description: created }
+        "429": { description: too many requests }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Issue access + refresh tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:    { type: string, format: email }
+                password: { type: string, minLength: 8 }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenPair" }
+        "401": { description: invalid credentials }
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate refresh + issue new access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [refresh_token], properties: { refresh_token: { type: string } } }
+      responses: { "200": { description: ok }, "401": { description: invalid refresh } }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke a refresh token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [refresh_token], properties: { refresh_token: { type: string } } }
+      responses: { "200": { description: ok } }
+
+  /auth/me:            { get:  { tags: [Auth], summary: Current user, responses: { "200": { description: ok } } } }
+  /auth/me/password:
+    post:
+      tags: [Auth]
+      summary: Change own password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, new_password]
+              properties:
+                current_password: { type: string }
+                new_password:     { type: string, minLength: 8 }
+      responses: { "200": { description: ok }, "401": { description: current password incorrect } }
+
+  /admin/properties:
+    get:
+      tags: [Admin — properties]
+      summary: List all properties (incl. drafts)
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Admin — properties]
+      summary: Create property
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PropertyInput" }
+      responses: { "201": { description: created } }
+  /admin/properties/{id}:
+    parameters: [ { in: path, name: id, required: true, schema: { type: string, format: uuid } } ]
+    get:    { tags: [Admin — properties], summary: Get by id,       responses: { "200": { description: ok } } }
+    put:
+      tags: [Admin — properties]
+      summary: Update property
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/PropertyInput" } } }
+      responses: { "200": { description: ok } }
+    delete: { tags: [Admin — properties], summary: Soft-delete,     responses: { "200": { description: ok } } }
+  /admin/properties/{id}/publish:
+    parameters: [ { in: path, name: id, required: true, schema: { type: string, format: uuid } } ]
+    post:  { tags: [Admin — properties], summary: Publish, responses: { "200": { description: ok } } }
+  /admin/properties/{id}/unpublish:
+    parameters: [ { in: path, name: id, required: true, schema: { type: string, format: uuid } } ]
+    post:  { tags: [Admin — properties], summary: Unpublish, responses: { "200": { description: ok } } }
+  /admin/uploads/image:
+    post:
+      tags: [Admin — properties]
+      summary: Upload image (JPEG/PNG/WebP, 8 MB max)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties: { file: { type: string, format: binary } }
+      responses: { "200": { description: ok }, "415": { description: unsupported type } }
+
+  /admin/inquiries:          { get: { tags: [Admin — inquiries], summary: List, responses: { "200": { description: ok } } } }
+  /admin/inquiries/{id}:
+    parameters: [ { in: path, name: id, required: true, schema: { type: string, format: uuid } } ]
+    get:    { tags: [Admin — inquiries], summary: Get,     responses: { "200": { description: ok } } }
+    patch:
+      tags: [Admin — inquiries]
+      summary: Update status / notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:      { type: string, enum: [new, in_progress, responded, archived, spam] }
+                admin_notes: { type: string }
+      responses: { "200": { description: ok } }
+    delete: { tags: [Admin — inquiries], summary: Delete, responses: { "200": { description: ok } } }
+
+  /admin/users:
+    get:  { tags: [Admin — users], summary: List (super_admin), responses: { "200": { description: ok } } }
+    post:
+      tags: [Admin — users]
+      summary: Create user (super_admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, role]
+              properties:
+                email:     { type: string, format: email }
+                password:  { type: string, minLength: 8 }
+                full_name: { type: string }
+                role:      { type: string, enum: [super_admin, admin, listing_manager] }
+      responses: { "201": { description: created }, "409": { description: email already in use } }
+  /admin/users/{id}:
+    parameters: [ { in: path, name: id, required: true, schema: { type: string, format: uuid } } ]
+    patch:  { tags: [Admin — users], summary: Update (super_admin), responses: { "200": { description: ok } } }
+    delete: { tags: [Admin — users], summary: Delete (super_admin), responses: { "200": { description: ok } } }
+
+  /admin/stats:                        { get: { tags: [Admin — stats], summary: KPIs,     responses: { "200": { description: ok } } } }
+  /admin/stats/inquiries-daily:        { get: { tags: [Admin — stats], summary: 30-day histogram, responses: { "200": { description: ok } } } }
+  /admin/stats/recent-activity:        { get: { tags: [Admin — stats], summary: Recent activity,  responses: { "200": { description: ok } } } }
+
+  /admin/settings:
+    get: { tags: [Admin — settings], summary: Get,    responses: { "200": { description: ok } } }
+    put: { tags: [Admin — settings], summary: Update, responses: { "200": { description: ok } } }
+
+  /admin/audit:
+    get:
+      tags: [Admin — audit]
+      summary: Audit log (super_admin)
+      parameters:
+        - { in: query, name: entity, schema: { type: string } }
+        - { in: query, name: action, schema: { type: string } }
+        - { in: query, name: user_id, schema: { type: string, format: uuid } }
+        - { in: query, name: page,      schema: { type: integer } }
+        - { in: query, name: page_size, schema: { type: integer, maximum: 200 } }
+      responses: { "200": { description: ok } }
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    InquiryInput:
+      type: object
+      required: [name, email, message]
+      properties:
+        property_id: { type: string, format: uuid, nullable: true }
+        name:        { type: string, minLength: 2, maxLength: 100 }
+        email:       { type: string, format: email }
+        phone:       { type: string, nullable: true }
+        message:     { type: string, minLength: 5, maxLength: 4000 }
+        source:      { type: string, enum: [property, contact] }
+    TokenPair:
+      type: object
+      properties:
+        access_token:  { type: string }
+        refresh_token: { type: string }
+        expires_at:    { type: string, format: date-time }
+        user:
+          type: object
+          properties:
+            id:        { type: string, format: uuid }
+            email:     { type: string }
+            full_name: { type: string }
+            role:      { type: string }
+    PropertyInput:
+      type: object
+      required: [title, listing_type, property_type, status, address, city, state, zip_code]
+      properties:
+        slug:           { type: string }
+        title:          { type: string, minLength: 3, maxLength: 200 }
+        description:    { type: string }
+        listing_type:   { type: string, enum: [sale, rent] }
+        property_type:  { type: string, enum: [house, apartment, condo, townhouse, commercial, land] }
+        status:         { type: string, enum: [draft, available, pending, sold, rented, off_market] }
+        sale_price:     { type: integer, nullable: true }
+        monthly_rent:   { type: integer, nullable: true }
+        address:        { type: string }
+        unit_number:    { type: string, nullable: true }
+        city:           { type: string }
+        state:          { type: string }
+        zip_code:       { type: string }
+        bedrooms:       { type: integer }
+        bathrooms:      { type: number }
+        half_bathrooms: { type: integer }
+        garage_spaces:  { type: integer }
+        square_feet:    { type: integer, nullable: true }
+        lot_size:       { type: integer, nullable: true }
+        year_built:     { type: integer, nullable: true }
+        featured:       { type: boolean }
+        publish:        { type: boolean }
+        image_urls:     { type: array, items: { type: string, format: uri } }
