@@ -10,6 +10,7 @@ export interface SiteSettings {
   facebook_url?: string;
   instagram_url?: string;
   twitter_url?: string;
+  logo_url?: string;
   // About page
   about_name?: string;
   about_title?: string;

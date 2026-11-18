@@ -22,6 +22,7 @@ var publicKeys = map[string]bool{
 	"facebook_url":    true,
 	"instagram_url":   true,
 	"twitter_url":     true,
+	"logo_url":        true,
 	"about_name":      true,
 	"about_title":     true,
 	"about_photo_url": true,

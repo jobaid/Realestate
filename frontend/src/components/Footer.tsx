@@ -17,7 +17,12 @@ export default function Footer() {
     <footer className="mt-24 bg-navy-900 text-navy-100">
       <div className="mx-auto max-w-7xl px-4 py-14 grid gap-10 md:grid-cols-4">
         <div>
-          <div className="font-display font-bold text-white text-xl">{name}</div>
+          {s?.logo_url ? (
+            <img src={s.logo_url} alt={name}
+              className="h-16 w-auto object-contain mb-3" style={{ maxWidth: 240 }} />
+          ) : (
+            <div className="font-display font-bold text-white text-xl">{name}</div>
+          )}
           <p className="mt-3 text-sm text-navy-100/70">{tagline}</p>
           {(s?.facebook_url || s?.instagram_url || s?.twitter_url) && (
             <div className="mt-4 flex gap-3">

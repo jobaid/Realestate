@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Home, Heart, Menu, X } from 'lucide-react';
 import { getFavorites, subscribe } from '../lib/favorites';
+import { getPublicSettings } from '../lib/adminSettings';
 
 const navLink = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-2 text-sm font-medium transition ${isActive ? 'text-accent-700' : 'text-navy-700 hover:text-navy-900'}`;
@@ -15,6 +17,7 @@ export default function Header() {
   const [favCount, setFavCount] = useState(() => getFavorites().length);
   const [open, setOpen] = useState(false);
   const loc = useLocation();
+  const { data: s } = useQuery({ queryKey: ['public-settings'], queryFn: getPublicSettings, staleTime: 5 * 60_000 });
 
   useEffect(() => subscribe(() => setFavCount(getFavorites().length)), []);
   // Close the mobile menu whenever the route changes.
@@ -29,8 +32,17 @@ export default function Header() {
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-navy-100">
       <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between gap-2">
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <Home className="text-accent-600" size={22} />
-          <span className="font-display font-bold text-lg sm:text-xl tracking-tight">NUR Realty</span>
+          {s?.logo_url ? (
+            <img src={s.logo_url} alt={s.company_name || 'Logo'}
+              className="h-10 sm:h-11 w-auto object-contain" style={{ maxWidth: 200 }} />
+          ) : (
+            <>
+              <Home className="text-accent-600" size={22} />
+              <span className="font-display font-bold text-lg sm:text-xl tracking-tight">
+                {s?.company_name || 'NUR Realty'}
+              </span>
+            </>
+          )}
         </Link>
 
         {/* Desktop nav */}

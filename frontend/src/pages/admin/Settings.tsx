@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings as Cog, Lock, Upload, Mail, User as UserIcon, Send } from 'lucide-react';
+import { Settings as Cog, Lock, Upload, Mail, User as UserIcon, Send, Image as ImageIcon } from 'lucide-react';
 import {
   getAdminSettings, updateSettings, sendSMTPTest, type SiteSettings,
 } from '../../lib/adminSettings';
@@ -45,6 +45,7 @@ export default function SettingsPage() {
         {/* Company */}
         <section className={section}>
           <h2 className={h2cls}>Company</h2>
+          <LogoField value={form.logo_url ?? ''} onChange={(u) => set('logo_url', u)} />
           <div><label className={label}>Company name</label>
             <input className={field} value={form.company_name ?? ''} onChange={(e) => set('company_name', e.target.value)} /></div>
           <div><label className={label}>Tagline</label>
@@ -134,6 +135,57 @@ export default function SettingsPage() {
       </form>
 
       <PasswordCard />
+    </div>
+  );
+}
+
+function LogoField({ value, onChange }: { value: string; onChange: (u: string) => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  async function onFile(f: File | null) {
+    if (!f) return;
+    setBusy(true); setErr('');
+    try {
+      const url = await adminUploadImage(f);
+      onChange(url);
+    } catch (e: any) {
+      setErr(e?.response?.data?.error || 'Upload failed');
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  }
+
+  return (
+    <div>
+      <label className={label}>Logo (header &amp; footer)</label>
+      <div className="flex items-center gap-4">
+        <div className="h-24 w-24 rounded-xl overflow-hidden bg-navy-50 ring-1 ring-navy-200 flex items-center justify-center p-2">
+          {value
+            ? <img src={value} alt="Logo" className="max-w-full max-h-full object-contain" />
+            : <ImageIcon className="text-navy-300" size={32} />}
+        </div>
+        <div className="flex flex-col gap-1">
+          <button type="button" onClick={() => fileRef.current?.click()} disabled={busy}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-navy-900 text-white px-3 py-1.5 text-xs font-semibold hover:bg-navy-800 disabled:opacity-60 w-fit">
+            <Upload size={14} /> {busy ? 'Uploading…' : value ? 'Replace logo' : 'Upload logo'}
+          </button>
+          {value && (
+            <button type="button" onClick={() => onChange('')}
+              className="text-xs text-red-600 hover:underline w-fit">Remove</button>
+          )}
+          {err && <span className="text-xs text-red-600">{err}</span>}
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden
+            onChange={(e) => onFile(e.target.files?.[0] ?? null)} />
+        </div>
+      </div>
+      <p className="text-xs text-navy-400 mt-2">
+        Upload any size (e.g. 2000×2000). The site renders it at max 500×500, scaled to fit the
+        header (≈40px tall) and footer (≈64px tall) while preserving the aspect ratio. Use a
+        transparent PNG or SVG for best results on the dark footer.
+      </p>
     </div>
   );
 }
