@@ -24,6 +24,21 @@ export interface SiteSettings {
   smtp_from_name?: string;
   smtp_from_address?: string;
   smtp_use_tls?: string;
+  // Digital ID (editable from its own admin page)
+  did_enabled?: string;
+  did_first_name?: string;
+  did_last_name?: string;
+  did_title?: string;
+  did_organization?: string;
+  did_phone?: string;
+  did_email?: string;
+  did_website?: string;
+  did_address?: string;
+  did_note?: string;
+  did_photo_url?: string;
+  did_linkedin?: string;
+  did_facebook?: string;
+  did_instagram?: string;
 }
 
 export async function getAdminSettings(): Promise<SiteSettings> {

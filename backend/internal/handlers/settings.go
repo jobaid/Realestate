@@ -26,6 +26,7 @@ var publicKeys = map[string]bool{
 	"about_title":     true,
 	"about_photo_url": true,
 	"about_bio":       true,
+	"did_enabled":     true, // so the About page can show/hide the button
 }
 
 // Keys admin can write. Includes publicKeys + sensitive admin-only keys.
@@ -38,6 +39,20 @@ var writableKeys = merge(publicKeys, map[string]bool{
 	"smtp_from_name":    true,
 	"smtp_from_address": true,
 	"smtp_use_tls":      true,
+	// Digital ID (served via dedicated endpoints, not the public /settings)
+	"did_first_name":   true,
+	"did_last_name":    true,
+	"did_title":        true,
+	"did_organization": true,
+	"did_phone":        true,
+	"did_email":        true,
+	"did_website":      true,
+	"did_address":      true,
+	"did_note":         true,
+	"did_photo_url":    true,
+	"did_linkedin":     true,
+	"did_facebook":     true,
+	"did_instagram":    true,
 })
 
 // Keys returned to admin GET — same as writable, but smtp_password is masked.

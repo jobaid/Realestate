@@ -1,11 +1,15 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Mail, Phone } from 'lucide-react';
+import { Mail, Phone, IdCard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getPublicSettings } from '../lib/adminSettings';
 import { useHead } from '../lib/head';
+import DigitalIDModal from '../components/DigitalIDModal';
 
 export default function About() {
   const { data: s } = useQuery({ queryKey: ['public-settings'], queryFn: getPublicSettings });
+  const [showDigitalID, setShowDigitalID] = useState(false);
+  const didEnabled = String(s?.['did_enabled' as keyof typeof s] ?? 'true').toLowerCase() !== 'false';
 
   useHead({
     title: 'About',
@@ -48,6 +52,12 @@ export default function About() {
             {bio}
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
+            {didEnabled && (
+              <button type="button" onClick={() => setShowDigitalID(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-accent-600 hover:bg-accent-700 text-white px-5 py-3 text-sm font-semibold">
+                <IdCard size={16} /> Save my Digital ID
+              </button>
+            )}
             <Link to="/contact"
               className="inline-flex items-center rounded-lg bg-navy-900 text-white px-5 py-3 text-sm font-semibold hover:bg-navy-800">
               Get in touch
@@ -59,6 +69,8 @@ export default function About() {
           </div>
         </div>
       </div>
+
+      {showDigitalID && <DigitalIDModal onClose={() => setShowDigitalID(false)} />}
     </div>
   );
 }

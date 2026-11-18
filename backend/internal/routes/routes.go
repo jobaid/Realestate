@@ -55,6 +55,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config) *gin.Engine {
 	docs := &handlers.DocsHandler{SpecPath: cfg.DocsPath}
 	contacts := &handlers.ContactsHandler{DB: pool}
 	campaigns := &handlers.CampaignsHandler{DB: pool, Sender: sender}
+	did := &handlers.DigitalIDHandler{DB: pool}
 
 	r.GET("/robots.txt", seo.Robots)
 	r.GET("/sitemap.xml", seo.Sitemap)
@@ -79,6 +80,9 @@ func New(pool *pgxpool.Pool, cfg *config.Config) *gin.Engine {
 		cached300 := v1.Group("")
 		cached300.Use(middleware.PublicCache(300))
 		cached300.GET("/settings", sh.Public)
+		cached300.GET("/digital-id", did.Info)
+		cached300.GET("/digital-id.qr", did.QR)
+		v1.GET("/digital-id.vcf", did.Download)
 
 		v1.POST("/inquiries",
 			middleware.IPRateLimit(5, 10*time.Minute), ih.Create)

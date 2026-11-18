@@ -20,6 +20,7 @@ import Audit from './pages/admin/Audit';
 import SettingsPage from './pages/admin/Settings';
 import Contacts from './pages/admin/Contacts';
 import Broadcast from './pages/admin/Broadcast';
+import DigitalIDPage from './pages/admin/DigitalID';
 import RoleRoute from './components/RoleRoute';
 import { getUser } from './lib/auth';
 
@@ -82,6 +83,9 @@ export default function App() {
         } />
         <Route path="settings" element={
           <RoleRoute allow={['super_admin', 'admin']}><SettingsPage /></RoleRoute>
+        } />
+        <Route path="digital-id" element={
+          <RoleRoute allow={['super_admin', 'admin']}><DigitalIDPage /></RoleRoute>
         } />
       </Route>
     </Routes>
