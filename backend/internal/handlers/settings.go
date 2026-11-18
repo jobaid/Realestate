@@ -54,6 +54,9 @@ var writableKeys = merge(publicKeys, map[string]bool{
 	"did_linkedin":     true,
 	"did_facebook":     true,
 	"did_instagram":    true,
+	// Backups
+	"backup_schedule":       true,
+	"backup_retention_days": true,
 })
 
 // Keys returned to admin GET — same as writable, but smtp_password is masked.

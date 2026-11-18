@@ -13,6 +13,7 @@ type Config struct {
 	PublicBaseURL                              string
 	HSTS                                       bool
 	DocsPath                                   string
+	BackupDir                                  string
 }
 
 func Load() *Config {
@@ -30,6 +31,7 @@ func Load() *Config {
 		PublicBaseURL: env("PUBLIC_BASE_URL", "http://localhost:8080"),
 		HSTS:          env("HSTS", "false") == "true",
 		DocsPath:      env("DOCS_PATH", "./docs/openapi.yaml"),
+		BackupDir:     env("BACKUP_DIR", "./backups"),
 	}
 	if len(c.JWTSecret) < 32 {
 		log.Fatal("JWT_SECRET must be at least 32 chars")

@@ -40,6 +40,9 @@ export interface SiteSettings {
   did_linkedin?: string;
   did_facebook?: string;
   did_instagram?: string;
+  // Backup scheduler
+  backup_schedule?: string;
+  backup_retention_days?: string;
 }
 
 export async function getAdminSettings(): Promise<SiteSettings> {

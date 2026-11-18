@@ -6,6 +6,8 @@ import {
 } from '../../lib/adminSettings';
 import { changeOwnPassword } from '../../lib/adminUsers';
 import { adminUploadImage } from '../../lib/adminApi';
+import BackupSection from '../../components/BackupSection';
+import { getUser } from '../../lib/auth';
 
 const field = 'w-full rounded-lg border border-navy-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500';
 const label = 'block text-sm font-medium text-navy-700 mb-1';
@@ -124,6 +126,11 @@ export default function SettingsPage() {
           </div>
           <SMTPTester />
         </section>
+
+        {/* Backup & Restore — super_admin only */}
+        {getUser()?.role === 'super_admin' && (
+          <BackupSection form={form} set={(k, v) => set(k, v)} />
+        )}
 
         <div className="flex items-center gap-3">
           <button disabled={save.isPending}

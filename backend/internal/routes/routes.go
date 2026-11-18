@@ -9,13 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"realestate/internal/backup"
 	"realestate/internal/config"
 	"realestate/internal/email"
 	"realestate/internal/handlers"
 	"realestate/internal/middleware"
 )
 
-func New(pool *pgxpool.Pool, cfg *config.Config) *gin.Engine {
+func New(pool *pgxpool.Pool, cfg *config.Config, bm *backup.Manager) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	r.Use(gin.Recovery(), gin.Logger())
@@ -56,6 +57,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config) *gin.Engine {
 	contacts := &handlers.ContactsHandler{DB: pool}
 	campaigns := &handlers.CampaignsHandler{DB: pool, Sender: sender}
 	did := &handlers.DigitalIDHandler{DB: pool}
+	backups := &handlers.BackupsHandler{Mgr: bm, DB: pool}
 
 	r.GET("/robots.txt", seo.Robots)
 	r.GET("/sitemap.xml", seo.Sitemap)
@@ -142,6 +144,14 @@ func New(pool *pgxpool.Pool, cfg *config.Config) *gin.Engine {
 		owner.PATCH("/admin/users/:id", writeLimit, usrs.Update)
 		owner.DELETE("/admin/users/:id", writeLimit, usrs.Delete)
 		owner.GET("/admin/audit", audit.List)
+
+		// Backup / restore — super_admin only. Operations are heavy, so
+		// restore has no rate limit (admins click once and wait).
+		owner.GET("/admin/backups", backups.List)
+		owner.POST("/admin/backups", backups.Create)
+		owner.GET("/admin/backups/:id/download", backups.Download)
+		owner.DELETE("/admin/backups/:id", backups.Delete)
+		owner.POST("/admin/backups/restore", backups.Restore)
 	}
 
 	return r

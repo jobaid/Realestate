@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"realestate/internal/backup"
 	"realestate/internal/config"
 	"realestate/internal/db"
 	"realestate/internal/routes"
@@ -22,13 +23,24 @@ func main() {
 	}
 	defer pool.Close()
 
-	r := routes.New(pool, cfg)
+	bm := &backup.Manager{
+		DB:        pool,
+		Cfg:       cfg,
+		BackupDir: cfg.BackupDir,
+	}
+
+	// Start the auto-backup scheduler. Cancelled on shutdown.
+	schedulerCtx, cancelScheduler := context.WithCancel(context.Background())
+	defer cancelScheduler()
+	go bm.StartScheduler(schedulerCtx)
+
+	r := routes.New(pool, cfg, bm)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
 		Handler:      r,
 		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		WriteTimeout: 30 * time.Minute, // backup download can be large
 		IdleTimeout:  60 * time.Second,
 	}
 
@@ -43,6 +55,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("shutting down")
+	cancelScheduler()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = srv.Shutdown(ctx)
