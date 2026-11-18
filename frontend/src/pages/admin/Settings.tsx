@@ -177,14 +177,14 @@ function LogoField({ value, onChange }: { value: string; onChange: (u: string) =
               className="text-xs text-red-600 hover:underline w-fit">Remove</button>
           )}
           {err && <span className="text-xs text-red-600">{err}</span>}
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" hidden
             onChange={(e) => onFile(e.target.files?.[0] ?? null)} />
         </div>
       </div>
       <p className="text-xs text-navy-400 mt-2">
-        Upload any size (e.g. 2000×2000). The site renders it at max 500×500, scaled to fit the
-        header (≈40px tall) and footer (≈64px tall) while preserving the aspect ratio. Use a
-        transparent PNG or SVG for best results on the dark footer.
+        PNG / JPEG / WebP / SVG — up to 16 MB. Upload at any resolution (e.g. 2000×2000); the
+        site renders it at header ~40px tall and footer ~64px tall while preserving the aspect
+        ratio. Use a transparent PNG or SVG for best results on the dark footer.
       </p>
     </div>
   );

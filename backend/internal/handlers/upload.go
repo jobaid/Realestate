@@ -3,6 +3,7 @@ package handlers
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -19,23 +20,25 @@ type UploadHandler struct {
 	Cfg *config.Config
 }
 
-const maxUploadBytes = 8 * 1024 * 1024 // 8 MB
+const maxUploadBytes = 16 * 1024 * 1024 // 16 MB — big enough for high-res logos
 
 var allowedMime = map[string]string{
-	"image/jpeg": ".jpg",
-	"image/png":  ".png",
-	"image/webp": ".webp",
+	"image/jpeg":    ".jpg",
+	"image/png":     ".png",
+	"image/webp":    ".webp",
+	"image/svg+xml": ".svg",
+	"image/gif":     ".gif",
 }
 
 func (h *UploadHandler) Image(c *gin.Context) {
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadBytes+1024)
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadBytes+4096)
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(400, gin.H{"error": "file required"})
+		c.JSON(400, gin.H{"error": "file required (or too large — max 16 MB)"})
 		return
 	}
 	if file.Size > maxUploadBytes {
-		c.JSON(413, gin.H{"error": "file too large (max 8 MB)"})
+		c.JSON(413, gin.H{"error": fmt.Sprintf("file too large: %.1f MB (max 16 MB)", float64(file.Size)/1024/1024)})
 		return
 	}
 	f, err := file.Open()
@@ -52,7 +55,7 @@ func (h *UploadHandler) Image(c *gin.Context) {
 	}
 	ext, ok := allowedMime[mt.String()]
 	if !ok {
-		c.JSON(415, gin.H{"error": "unsupported type: " + mt.String()})
+		c.JSON(415, gin.H{"error": "unsupported type: " + mt.String() + " (allowed: JPEG, PNG, WebP, SVG, GIF)"})
 		return
 	}
 	if _, err := f.Seek(0, io.SeekStart); err != nil {
@@ -61,7 +64,7 @@ func (h *UploadHandler) Image(c *gin.Context) {
 	}
 
 	if err := os.MkdirAll(h.Cfg.UploadDir, 0o755); err != nil {
-		c.JSON(500, gin.H{"error": "storage not ready"})
+		c.JSON(500, gin.H{"error": "storage not ready: " + err.Error()})
 		return
 	}
 	b := make([]byte, 16)
@@ -71,13 +74,13 @@ func (h *UploadHandler) Image(c *gin.Context) {
 
 	out, err := os.Create(dst)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "create failed"})
+		c.JSON(500, gin.H{"error": "create failed: " + err.Error()})
 		return
 	}
 	defer out.Close()
 	if _, err := io.Copy(out, io.LimitReader(f, maxUploadBytes)); err != nil {
 		_ = os.Remove(dst)
-		c.JSON(500, gin.H{"error": "write failed"})
+		c.JSON(500, gin.H{"error": "write failed: " + err.Error()})
 		return
 	}
 

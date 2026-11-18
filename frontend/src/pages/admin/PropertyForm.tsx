@@ -248,7 +248,7 @@ export default function PropertyForm() {
               <Upload size={18} />
               <span className="text-xs mt-1">{uploading ? 'Uploading…' : 'Add photo'}</span>
             </button>
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden
               onChange={(e) => onFiles(e.target.files)} />
           </div>
           <p className="text-xs text-navy-400 mt-1">JPEG, PNG or WebP, max 8 MB each. First photo is the primary image.</p>
