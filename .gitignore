@@ -4,6 +4,11 @@ node_modules/
 dist/
 backend/tmp/
 backend/uploads/
+backend/server
+backend/bootstrap
 .DS_Store
 .vscode/
 .idea/
+
+# TypeScript incremental build cache — regenerated on every tsc run
+*.tsbuildinfo
