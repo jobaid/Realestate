@@ -1,18 +1,26 @@
 package handlers
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"html"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"realestate/internal/email"
 )
 
 type InquiryHandler struct {
-	DB *pgxpool.Pool
+	DB     *pgxpool.Pool
+	Sender *email.Sender
 }
 
 type inquiryCreate struct {
@@ -54,17 +62,64 @@ func (h *InquiryHandler) Create(c *gin.Context) {
 		in.PropertyID = nil
 	}
 
+	cleanName := strings.TrimSpace(in.Name)
+	cleanEmail := strings.ToLower(strings.TrimSpace(in.Email))
+	cleanMsg := strings.TrimSpace(in.Message)
+
 	var id string
 	err := h.DB.QueryRow(c.Request.Context(), `
 		INSERT INTO inquiries (property_id, name, email, phone, message, source, ip_addr, user_agent)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-		in.PropertyID, strings.TrimSpace(in.Name), strings.ToLower(strings.TrimSpace(in.Email)),
-		in.Phone, strings.TrimSpace(in.Message), src, c.ClientIP(), c.Request.UserAgent()).Scan(&id)
+		in.PropertyID, cleanName, cleanEmail,
+		in.Phone, cleanMsg, src, c.ClientIP(), c.Request.UserAgent()).Scan(&id)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "could not record inquiry"})
 		return
 	}
+
+	// Fire-and-forget email notification to the admin. Failure here does NOT
+	// fail the user's submission — the inquiry is already stored.
+	if h.Sender != nil {
+		go h.notifyAdmin(id, cleanName, cleanEmail, in.Phone, cleanMsg, in.PropertyID)
+	}
 	c.JSON(http.StatusCreated, gin.H{"id": id, "ok": true})
+}
+
+func (h *InquiryHandler) notifyAdmin(id, name, fromEmail string, phone *string, msg string, propertyID *string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	cfg, err := h.Sender.Load(ctx)
+	if err != nil || cfg.NotifyEmail == "" {
+		return
+	}
+	phoneLine := ""
+	if phone != nil && *phone != "" {
+		phoneLine = fmt.Sprintf("<p><strong>Phone:</strong> %s</p>", html.EscapeString(*phone))
+	}
+	propLine := ""
+	if propertyID != nil && *propertyID != "" {
+		var title, slug string
+		if err := h.DB.QueryRow(ctx,
+			`SELECT title, slug FROM properties WHERE id=$1`, *propertyID).
+			Scan(&title, &slug); err == nil {
+			propLine = fmt.Sprintf(`<p><strong>Property:</strong> %s</p>`, html.EscapeString(title))
+			_ = slug
+		}
+	}
+	body := fmt.Sprintf(`<h2>New inquiry received</h2>
+<p><strong>From:</strong> %s &lt;%s&gt;</p>
+%s%s
+<p><strong>Message:</strong></p>
+<blockquote style="border-left:3px solid #ccc;padding-left:1em;color:#333">%s</blockquote>
+<hr>
+<p style="color:#888;font-size:12px">Inquiry ID: %s</p>`,
+		html.EscapeString(name), html.EscapeString(fromEmail),
+		phoneLine, propLine, html.EscapeString(msg), id)
+
+	subject := "New inquiry from " + name
+	if err := h.Sender.Send(cfg, cfg.NotifyEmail, subject, body); err != nil {
+		log.Printf("inquiry %s: notify email failed: %v", id, err)
+	}
 }
 
 type inquiryRow struct {

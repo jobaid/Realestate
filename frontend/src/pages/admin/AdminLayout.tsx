@@ -2,6 +2,7 @@ import { NavLink, Outlet, Navigate, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   Home, LayoutDashboard, LayoutList, PlusCircle, LogOut, Mail, Shield, Settings as Cog, History,
+  Users as UsersIcon, Megaphone,
 } from 'lucide-react';
 import { isLoggedIn, getUser, logout } from '../../lib/auth';
 import { unreadInquiries } from '../../lib/adminInquiries';
@@ -55,6 +56,12 @@ export default function AdminLayout() {
                 </span>
               )}
             </NavLink>
+          )}
+          {canManagerView && (
+            <NavLink to="/admin/contacts" className={link}><UsersIcon size={16} /> Contacts</NavLink>
+          )}
+          {canManagerView && (
+            <NavLink to="/admin/broadcast" className={link}><Megaphone size={16} /> Broadcast</NavLink>
           )}
           {canOwnerView && (
             <NavLink to="/admin/users" className={link}><Shield size={16} /> Users</NavLink>

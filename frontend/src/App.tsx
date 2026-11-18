@@ -6,6 +6,7 @@ import PropertyDetails from './pages/PropertyDetails';
 import Listings from './pages/Listings';
 import Placeholder from './pages/Placeholder';
 import Contact from './pages/Contact';
+import About from './pages/About';
 import Favorites from './pages/Favorites';
 import AdminLogin from './pages/admin/Login';
 import AdminLayout from './pages/admin/AdminLayout';
@@ -17,6 +18,8 @@ import InquiryDetail from './pages/admin/InquiryDetail';
 import Users from './pages/admin/Users';
 import Audit from './pages/admin/Audit';
 import SettingsPage from './pages/admin/Settings';
+import Contacts from './pages/admin/Contacts';
+import Broadcast from './pages/admin/Broadcast';
 import RoleRoute from './components/RoleRoute';
 import { getUser } from './lib/auth';
 
@@ -32,7 +35,6 @@ function PublicLayout() {
   );
 }
 
-// listing_manager doesn't have a dashboard; send them straight to properties.
 function AdminIndex() {
   const role = getUser()?.role;
   if (role === 'listing_manager') return <Navigate to="/admin/properties" replace />;
@@ -49,7 +51,7 @@ export default function App() {
         <Route path="/sold" element={<Listings mode="sold" />} />
         <Route path="/property/:slug" element={<PropertyDetails />} />
         <Route path="/favorites" element={<Favorites />} />
-        <Route path="/about" element={<Placeholder title="About NUR Realty" />} />
+        <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<Placeholder title="Page not found" />} />
       </Route>
@@ -65,6 +67,12 @@ export default function App() {
         } />
         <Route path="inquiries/:id" element={
           <RoleRoute allow={['super_admin', 'admin']}><InquiryDetail /></RoleRoute>
+        } />
+        <Route path="contacts" element={
+          <RoleRoute allow={['super_admin', 'admin']}><Contacts /></RoleRoute>
+        } />
+        <Route path="broadcast" element={
+          <RoleRoute allow={['super_admin', 'admin']}><Broadcast /></RoleRoute>
         } />
         <Route path="users" element={
           <RoleRoute allow={['super_admin']}><Users /></RoleRoute>

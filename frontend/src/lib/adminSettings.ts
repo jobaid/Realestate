@@ -10,6 +10,20 @@ export interface SiteSettings {
   facebook_url?: string;
   instagram_url?: string;
   twitter_url?: string;
+  // About page
+  about_name?: string;
+  about_title?: string;
+  about_photo_url?: string;
+  about_bio?: string;
+  // Admin / SMTP (admin only)
+  notify_email?: string;
+  smtp_host?: string;
+  smtp_port?: string;
+  smtp_user?: string;
+  smtp_password?: string;
+  smtp_from_name?: string;
+  smtp_from_address?: string;
+  smtp_use_tls?: string;
 }
 
 export async function getAdminSettings(): Promise<SiteSettings> {
@@ -19,6 +33,11 @@ export async function getAdminSettings(): Promise<SiteSettings> {
 
 export async function updateSettings(s: SiteSettings) {
   await adminApi.put('/admin/settings', s);
+}
+
+export async function sendSMTPTest(): Promise<{ sent_to: string }> {
+  const { data } = await adminApi.post('/admin/settings/smtp-test');
+  return data;
 }
 
 export async function getPublicSettings(): Promise<SiteSettings> {
